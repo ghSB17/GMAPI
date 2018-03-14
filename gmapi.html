@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=<device-width>, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://code.jquery.com/jquery.js"></script>
+    
+    <title>Document</title>
+    <style>
+        #results{
+            height: 400px;
+            width: 50%;
+            padding: 5%;
+        }
+    </style>
+</head>
+<body>
+    <h1>My Google Maps</h1>
+    <div id="results">
+    </div>
+
+    <script>
+        const apiKEY='AIzaSyCpZp25lr8vvjPkK0GrWL-P089Vqrjo3a0'
+        const addressSP=[ {buildingNum:'22',streetName:'Sand Hills Rd',cityName:'Kendal Park',stateName:'NJ'},
+                          {buildingNum:'1',streetName:'Manino Park Dr',cityName:'Old Bridge',stateName:'NJ'},
+                          {buildingNum:'470',streetName:'E Freehold Rd',cityName:'Freehold',stateName:'NJ'},
+                          {buildingNum:'41',streetName:'Center St',cityName:'Freehold',stateName:'NJ'},
+                          {buildingNum:'34',streetName:'U.S. 9',cityName:'Morganville',stateName:'NJ'},
+                          {buildingNum:'380',streetName:'Dunham Corner Rd',cityName:'East Brunswick',stateName:'NJ'},   ]
+
+        function initMap(){
+            var options={
+                zoom:8, 
+                center:{lat:40.0583,lng:-74.4057},
+            }
+            var myMap=new 
+            google.maps.Map(document.getElementById('results'),options);
+
+            // var myMarker=new google.maps.Marker({
+            // position:{lat:40.4976,lng:-74.4885,},
+            // map:myMap,
+            // icon:'./swimming.png'
+            // });
+            function addMarker(objProperties){
+                var myMarker=new 
+                google.maps.Marker({
+                    position:objProperties.coords, 
+                    map:objProperties.mapD,
+                    icon:"./swimming.png",
+                    
+                });
+                var myInfo=new google.maps.InfoWindow({
+                    content:objProperties.content,
+                });
+                console.log(myInfo);
+                myMarker.addListener('mouseover', 
+                    function(){
+                    myInfo.open(myMap,myMarker);
+                });
+                myMarker.addListener('mouseout', 
+                    function(){
+                    myInfo.close();
+                });
+            };
+
+            somerset={
+                coords:{lat:40.4976,lng:-74.4885,},
+                mapD:myMap,
+                // iconImage:'./swimming.png',
+                content:'<h6>Somerset NJ</h6>'
+            };
+            
+            addMarker(somerset);
+            
+            for(var i=0;i<addressSP.length;i++){
+                queryURL="https://maps.googleapis.com/maps/api/geocode/json?address="+
+                        addressSP[i].buildingNum+"+"+addressSP[i].streetName.replace(/ /g,'+')+
+                        "+"+addressSP[i].cityName.replace(/ /g,'+')+
+                        "+"+addressSP[i].stateName.replace(/ /g,'+')+"&key="+apiKEY
+                locationAddr= addressSP[i].buildingNum +", "+addressSP[i].streetName+
+                        ", "+addressSP[i].cityName+
+                        ", "+addressSP[i].stateName;
+                
+                console.log(queryURL);
+                console.log(locationAddr);
+                $.ajax({
+                    url: queryURL,
+                    method:"GET"
+                }).done(function(dataResponse){
+                    
+                    
+                    addMarker({coords: dataResponse.results[0].geometry.location,
+                               mapD: myMap,
+                               content:dataResponse.results[0].address_components[0].short_name+
+                               ", "+dataResponse.results[0].address_components[1].short_name
+                               +", "+dataResponse.results[0].address_components[2].short_name
+                               +", "+dataResponse.results[0].address_components[3].short_name});
+                });
+            } 
+
+        }
+    </script>
+
+    <script 
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCpZp25lr8vvjPkK0GrWL-P089Vqrjo3a0&callback=initMap"
+    async defer></script>
+</body>
+</html>
